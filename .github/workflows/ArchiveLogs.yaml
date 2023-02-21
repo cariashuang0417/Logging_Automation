@@ -1,0 +1,38 @@
+name: Execute Log Archiver Tool
+
+on:
+  # push:
+  #   branches: [main]
+  # run monthly, every 1st at 7:15am UTC
+  # schedule:
+  #  - cron: '15 7 1 * *'
+  # allow it to be run on-demand
+  workflow_dispatch:
+
+jobs:
+  archive-logs:
+    name: Run log archiver tool against specified ARCGIS_PORTAL_URL secret and archive logs to specified AWS Account
+    runs-on: ubuntu-latest
+    # see https://github.com/jtroe/cicd-container-images
+    # and https://github.com/jtroe/cicd-container-images/blob/main/python/arcgis-2.1.0-Conda.Linux.Dockerfile
+    container: ghcr.io/jtroe/cicd-container-images/arcgis-conda:2.1.0
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install dependencies
+        id: install_deps
+        run: |
+          python -m pip install boto3
+
+      - name: Run log archiver tool
+        id: log_tool
+        env:
+          ARCGIS_PORTAL_URL: ${{ secrets.ARCGIS_PORTAL_URL }}
+          ARCGIS_PORTAL_ADMIN: ${{ secrets.ARCGIS_PORTAL_ADMIN }}
+          ARCGIS_PORTAL_ADMIN_PASSWORD: ${{ secrets.ARCGIS_PORTAL_ADMIN_PASSWORD }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        run: |
+          python app.py $ARCGIS_PORTAL_URL $ARCGIS_PORTAL_ADMIN $ARCGIS_PORTAL_ADMIN_PASSWORD
