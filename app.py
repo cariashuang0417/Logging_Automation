@@ -39,7 +39,11 @@ def get_logs(gis):
         # get logs settings from portal
         days_back = admin.logs.settings.get("maxLogFileAge", 90)
 
-        # gather the portal logs
+        # gather the portal logs through gis.admin.logs.query()
+        # Parameters: start_time, end_time - can query logs from any desired time ranges
+        # Parameters: level - can query different types of logs [SEVERE, WARNING, INFO, DEBUG...]
+        # Parameters: query_filter - can use any combinations of users and source components, e.g. {“users”:[“admin”,”jcho”]}
+        # Parameters: page_size - can define numbers of logs to return
         for d in range(days_back):
             future = tp.submit(admin.logs.query, **{"start_time": start - _dt.timedelta(days=d), "end_time": start - _dt.timedelta(days=d + 1)})
             jobs[future] = {"server": admin.url, 'start_time': start - _dt.timedelta(days=d), 'end_time': start - _dt.timedelta(days=d + 1)}
